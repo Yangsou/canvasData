@@ -8,7 +8,7 @@ function handleFileSelect(evt) {
 }
 
 document.getElementById('files').addEventListener('change', handleFileSelect, false);
-
+var lblText = document.getElementById('lbl-text')
 function handleFileSelect(evt) {
 	var files = evt.target.files; // FileList object
 
@@ -26,10 +26,8 @@ function handleFileSelect(evt) {
 					json = JSON.parse(e.target.result);
 					// alert('json global var has been set to parsed json of this file here it is unevaled = \n' + JSON.stringify(json));
           // console.log(json);
-          canvas.addEventListener('click', function() {
-            alert('a');
-          });
           draw(json);
+          // console.log(circles);
 				} catch (ex) {
 					console.log('ex when trying to parse json = ' + ex);
 				}
@@ -38,6 +36,23 @@ function handleFileSelect(evt) {
 		reader.readAsText(f);
 	}
 
+
+	var label	 = document.getElementById('files').nextElementSibling,
+		labelVal = label.innerHTML;
+
+	// input.addEventListener( 'change', function( e )
+	// {
+		var fileName = '';
+		if( this.files && this.files.length > 1 )
+			fileName = ( this.getAttribute( 'data-multiple-caption' ) || '' ).replace( '{count}', this.files.length );
+		else
+			fileName = evt.target.value.split( '\\' ).pop();
+
+		if( fileName )
+			lblText.innerHTML = fileName;
+		else
+			lblText.innerHTML = labelVal;
+	// });
 }
 
 document.getElementById('files').addEventListener('change', handleFileSelect, false);
@@ -46,7 +61,33 @@ document.getElementById('files').addEventListener('change', handleFileSelect, fa
 */
 var canvas = document.querySelector('#canvas'),
     ctx = canvas.getContext('2d'),
-    radius = 20;
+    radius = 10,
+		lineColor = "#666",
+		circleColor = "#222",
+    circles = [];
+
+canvas.addEventListener('click', function(e){
+	 var clickedX = e.pageX - this.offsetLeft;
+	 var clickedY = e.pageY - this.offsetTop;
+
+	 for (var i = 0; i < circles.length; i++) {
+			 if (clickedX < circles[i].right && clickedX > circles[i].left && clickedY > circles[i].top && clickedY < circles[i].bottom) {
+					 console.log(circles[i].x, circles[i].y);
+					//  document.getElementById("body").removeChild(node);
+					 var _x = circles[i].x;
+					 var _y = circles[i].y;
+					 console.log(e);
+					 $('body').append("<div class='tooltip-wrap'>Node : " + (i+1) + "<br/> x = " + _x + "<br/> y = " + _y + "</div>");
+					 $('.tooltip-wrap').css({
+						 "position": "absolute",
+						 "top": e.pageY,
+						 "left": e.pageX,
+						 "background": "rgb(30, 140, 130)",
+						 "color": "#fff"
+					 })
+			 }
+	 }
+});
 
 function draw(jsonFile){
   var points = jsonFile.points;
@@ -63,22 +104,36 @@ function draw(jsonFile){
   }
 }
 
+var Circle = function(x, y, radius) {
+		this.x = x;
+		this.y = y;
+    this.left = x - radius;
+    this.top = y - radius;
+    this.right = x + radius;
+    this.bottom = y + radius;
+};
+
 function drawCircle(x, y) {
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, 2 * Math.PI);
   ctx.closePath();
-  ctx.strokeStyle = "#222";
-  ctx.fillStyle = "#222";
+  ctx.strokeStyle = circleColor;
+  ctx.fillStyle = circleColor;
   ctx.stroke();
   ctx.fill();
+  var circle = new Circle(x, y, radius);
+  circles.push(circle);
 }
 
 function drawLine(pos, posTo){
-  console.log(pos, '-', posTo);
   ctx.beginPath();
   ctx.moveTo(pos.x, pos.y);
   ctx.lineTo(posTo.x, posTo.y);
   ctx.closePath();
-  ctx.strokeStyle = "#666";
+  ctx.strokeStyle = lineColor;
   ctx.stroke();
 }
+
+/*
+******
+*/
