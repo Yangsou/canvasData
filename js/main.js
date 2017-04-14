@@ -1,11 +1,12 @@
 var json;
-
-function handleFileSelect(evt) {
-	var files = evt.target.files; // FileList object
-
-	// files is a FileList of File objects. List some properties.
-
-}
+var canvas = document.querySelector('#canvas'),
+    ctx = canvas.getContext('2d'),
+    radius = 14,
+		lineColor = "#666",
+		circleColor = "rgb(30, 140, 130)",
+    circles = [],
+		degree = new Array(),
+		degreeCentrality = new Array();
 
 document.getElementById('files').addEventListener('change', handleFileSelect, false);
 var lblText = document.getElementById('lbl-text')
@@ -59,12 +60,6 @@ document.getElementById('files').addEventListener('change', handleFileSelect, fa
 /*
 * --------------------------
 */
-var canvas = document.querySelector('#canvas'),
-    ctx = canvas.getContext('2d'),
-    radius = 10,
-		lineColor = "#666",
-		circleColor = "#222",
-    circles = [];
 
 canvas.addEventListener('click', function(e){
 	 var clickedX = e.pageX - this.offsetLeft;
@@ -72,19 +67,34 @@ canvas.addEventListener('click', function(e){
 
 	 for (var i = 0; i < circles.length; i++) {
 			 if (clickedX < circles[i].right && clickedX > circles[i].left && clickedY > circles[i].top && clickedY < circles[i].bottom) {
-					 console.log(circles[i].x, circles[i].y);
-					//  document.getElementById("body").removeChild(node);
+					$('.tooltip-wrap').remove();
 					 var _x = circles[i].x;
 					 var _y = circles[i].y;
-					 console.log(e);
-					 $('body').append("<div class='tooltip-wrap'>Node : " + (i+1) + "<br/> x = " + _x + "<br/> y = " + _y + "</div>");
+					 $('body').append(
+						 	"<div class='tooltip-wrap'>Node : "+ (i+1)
+							+ "<br/> x = " + _x
+							+ "<br/> y = " + _y
+							+ "<br/> degree: "+ degree[i]
+							+ "<br/> degreeCentrality: " + RoudingNumber(degreeCentrality[i])
+							+ "</div>"
+						);
+						$('.info-node div').html(
+							"Node : "+ (i+1)
+							+ "<br/> x = " + _x
+							+ "<br/> y = " + _y
+							+ "<br/> degree: "+ degree[i]
+							+ "<br/> degreeCentrality: " + RoudingNumber(degreeCentrality[i])
+						)
 					 $('.tooltip-wrap').css({
 						 "position": "absolute",
 						 "top": e.pageY,
 						 "left": e.pageX,
 						 "background": "rgb(30, 140, 130)",
 						 "color": "#fff"
-					 })
+					 });
+					 setTimeout(function(){
+						 $('.tooltip-wrap').remove();
+					 }, 5000);
 			 }
 	 }
 });
@@ -102,6 +112,21 @@ function draw(jsonFile){
   for( var i = 0; i < points.length; i++){
     drawCircle(points[i].x, points[i].y);
   }
+	// degree
+	for( var i = 0; i<points.length; i++){
+		var temp = 0;
+		for(var j = 0; j < connective.length; j++){
+			if(connective[j].begin == i+1 || connective[j].end == i+1){
+				temp++;
+			}
+		}
+		// console.log(temp);
+		degree[i] = temp;
+		degreeCentrality[i] = temp / (points.length - 1);
+		// console.log('degree', degree);
+	}
+	// degree Centrality
+
 }
 
 var Circle = function(x, y, radius) {
@@ -134,6 +159,15 @@ function drawLine(pos, posTo){
   ctx.stroke();
 }
 
+// tinh degree
+function degree(obj){
+
+}
 /*
 ******
 */
+function RoudingNumber(x){
+	var n = parseFloat(x);
+	x = Math.round(n * 1000)/1000;
+	return x;
+};
